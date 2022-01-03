@@ -1,5 +1,34 @@
 import json
 
+def calc_with_rpn(var_dict, *args):
+    ops = ["+", "-", "*", "/", "//"]
+    stack = []
+    for o in args:
+        if o in ops:
+            a = stack.pop()
+            b = stack.pop()
+            if o == "+":
+                stack.append(a+b)
+            elif o == "-":
+                stack.append(b-a)
+            elif o == "*":
+                stack.append(a*b)
+            elif o == "/":
+                stack.append(b/a)
+            elif o == "//":
+                stack.append(b//a)
+            else:
+                raise "Unsupported op"
+        else:
+            if o in var_dict:
+                stack.append(var_dict[o])
+            elif o.replace(".", "1", 1).isdigit():
+                stack.append(eval(o))
+            else:
+                raise "Field not exists"
+    return stack.pop()
+            
+
 class E3Config(object):
     def __init__(self, config_path, targets=[]):
         self._config = dict()
@@ -36,7 +65,25 @@ class E3Config(object):
         return calc_with_rpn(self._config, *ops)
     
     def concat(self, *args):
-        return concat(self._config, *args)
+        delimiter = args[0]
+        args = args[1:]
+        arr = []
+        for e in args:
+            if e not in self._config:
+                if e.startswith("`") and e.endswith("`"):
+                    arr.append(e[1:-1])
+                else:
+                    print("Undefine key: {} in rule: {}, args:{}".format(e, "concat", args))
+                    raise "Constant value should surrounded with '`'"
+            else:
+                arr.append(str(self._config[e]))
+        return delimiter.join(arr)
 
     def concat_with_flag(self, *args):
-        return concat_with_flag(self._config, *args)
+        delimiter = args[0]
+        args = args[1:]
+        arr = []
+        for arg in args:
+            key, flag = arg.split(":")
+            arr.append(flag+str(self._config[key]))
+        return delimiter.join(arr)
