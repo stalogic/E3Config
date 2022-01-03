@@ -38,6 +38,9 @@ class E3Config(object):
         self._parse_fields(raw_config, None)
         self._gen_fields(raw_config)
 
+    def get_config(self):
+        return self._config
+
     def _parse_fields(self, raw_config, domain):
         for key in [key for key in raw_config if not isinstance(raw_config[key], dict)]:
             if key not in self._config:
@@ -55,7 +58,7 @@ class E3Config(object):
                 func = getattr(self, raw_config[rule_level][field]["rule"])
                 value = func(*raw_config[rule_level][field]["args"])
                 self._config[field] = value
-                for domain in [for key in raw_config[rule_level][field] if key not in ("rule", "args")]:
+                for domain in [key for key in raw_config[rule_level][field] if key not in ("rule", "args")]:
                     if domain in self._targets:
                         func = getattr(self, raw_config[rule_level][field][domain]['rule'])
                         value = func(*raw_config[rule_level][field][domain]["args"])
