@@ -1,0 +1,75 @@
+{
+    "exp_name": "pairwise_item_rec_model",
+    "exp_hyper_param": {
+        "version": "v1",
+        "num_epoch":1,
+        "learning_rate":0.0001,
+        "loss": "bpr",
+        "v2":{
+            "version": "v2",
+            "num_epoch": 3
+        },
+        "v3":{
+            "version": "v3",
+            "num_epoch": 5
+        },
+        "v4":{
+            "version": "v4",
+            "loss": "hinge"
+        },
+        "v5":{
+            "version": "v5",
+            "learning_rate": 0.0005
+        },
+        "v6":{
+            "version": "v6",
+            "num_epoch": 3,
+            "learning_rate": 0.0005,
+            "loss": "hinge"
+        }
+    },
+    "data": {
+        "train_data": "model_train.csv",
+        "eval_data": "model_eval.csv",
+        "train_record_num": 12345566,
+        "eval_record_num": 234566
+    },
+    "run": {
+        "batch_size": 256,
+        "cluster": "cpu",
+        "train": {
+            "cluster": "{\\\"ps\\\": {\\\"count\\\": 2}, \\\"worker\\\":{\\\"count\\\": 10, \\\"gpu\\\": 20}}"
+        },
+        "eval": {
+            "cluster": "gpu",
+            "batch_size": 2048
+        },
+        "export": {
+            "cluster": "cpu"
+        }
+    },
+    "_": {
+        "run_steps": {
+            "rule": "calc",
+            "args": ["train_record_num", "batch_size", "//", "num_epoch", "*"],
+            "train": {
+                "rule": "calc",
+                "args": ["train_record_num", "batch_size", "//", "num_epoch", "*"]
+            },
+            "eval": {
+                "rule": "calc",
+                "args": ["eval_record_num", "batch_size", "//"]
+            }
+        },
+        "trial_desc": {
+            "rule": "concat_with_flag",
+            "args": ["_", "loss:L", "num_epoch:E", "learning_rate:LR"]
+        }
+    },
+    "__": {
+        "trial_id": {
+            "rule": "concat",
+            "args": ["_", "version", "trial_desc"]
+        }
+    }
+}
